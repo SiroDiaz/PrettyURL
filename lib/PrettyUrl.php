@@ -4,6 +4,7 @@
 class PrettyUrl {
 
 	private $url;
+	private $file;
 	private $blackList = array();
 
 	private $replaceChars = array(
@@ -26,12 +27,15 @@ class PrettyUrl {
 	/**
 	 * Initialize the url and define the black list
 	 *
+	 * @param string $url  the url to encode
+	 * @param bool   $file if the url is a file or not(default false)
 	 * @throws Exception if the url is invalid
 	 */	
 
-	public function __construct($url){
+	public function __construct($url, $file = false){
 		if(is_string($url) && !empty(trim($url))){
 			$this->url = $url;
+			$this->file = (is_bool($file)) ? $file : false;
 		}else{
 			throw new \Exception("The url can't be empty");
 		}
@@ -60,6 +64,25 @@ class PrettyUrl {
 
 	public function getUrl(){
 		return $this->url;
+	}
+
+	/**
+	 * set the type of file URL to encode
+	 */
+
+	public function setType($isFile) {
+		$this->file = (!is_bool($isFile)) ? false : $isFile;
+	}
+
+	/**
+	 * return the url type to encode or encoded
+	 *
+	 * @return string the type of link
+	 * 			f --> file, d --> normal link
+	 */
+
+	public function getType(){
+		return ($this->file) ? 'f' : 'd';
 	}
 
 	/**
@@ -122,8 +145,8 @@ class PrettyUrl {
 	}
 
 	/**
-	 * add new words to translate it to a valid
-	 * character in the URL and remove repeated
+	 * add new chars to translate it to a valid
+	 * character for the URL and remove repeated
 	 * key/values
 	 *
 	 * @param array $chars array with key and value
@@ -135,6 +158,7 @@ class PrettyUrl {
 			return false;
 		}
 
+		$len = count($this->replaceChars);
 		$keys = array_keys($chars);
 		$validChars = false;
 
@@ -148,10 +172,10 @@ class PrettyUrl {
 		}
 
 		if($validChars) {
-			$len = count($this->replaceChars);
-			$defaultCharsKeys = array_keys($this->replaceChars);
 			foreach($chars as $key => $val){
-				$this->replaceChars[$key] = $val;
+				if(!array_key_exists($key, $this->replaceChars){
+					$this->replaceChars[$key] = $val;
+				}
 			}
 
 			array_unique($this->replaceChars);
@@ -202,6 +226,8 @@ class PrettyUrl {
 	/**
 	 * encode the data to make it valid for websites
 	 * or forums
+	 *
+	 * @return bool false if a file is invalid
 	 */
 
 	public function Urlify(){
@@ -209,15 +235,60 @@ class PrettyUrl {
 		$this->_filter();
 		$this->_replaceChars();
 		$this->url = str_replace('_', ' ', $this->url);
-		$this->url = preg_replace(
-			'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
-			'',
-			$this->url
-		);
+		
+		// if is not a file the string then encode
+		if(!$this->file){
+			
+			$this->url = preg_replace(
+				'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+				'',
+				$this->url
+			);
+
+		} else {				// if is a file then encode a valid url for the file
+			
+			$this->url = explode('.', $this->url);
+			$len = count($this->url);
+			$aux = '';
+			
+			if($len != 2) {
+				
+				if($len <= 1) {
+					return false;
+				}
+
+				// encode individual array
+				for ($i = 0; $i < $len - 1; $i++){
+					$this->url[$i] = preg_replace(
+						'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+						'',
+						$this->url[$i]
+					);
+				}
+
+				// join arrays to generate the encoded URL
+				for($i = 0; $i < $len - 1; $i++){
+					$aux .= $this->url[$i];	
+				}
+				// adds the extension at the end of the string
+				$aux .= ".". $this->url[$len - 1];
+				$this->url = $aux;
+			} else {			// in case of the file the file name was more valid then do this 
+				$this->url[0] = preg_replace(
+					'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+					'',
+					$this->url[0]
+				);
+
+				$this->url = implode('.', $this->url);
+			}
+			
+		}
+		
 		$this->url = preg_replace('#\s+#', '-', $this->url);
 		$this->url = str_replace("\0", "", $this->url);	// delete all posible null values
 
-		$this->getUrl();
+		$this->getUrl();		// return the url encoded for best search engine results
 	}
 
 }
