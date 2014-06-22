@@ -4,20 +4,20 @@
 class PrettyUrl {
 
 	private $url;
-	private $blackList;
+	private $blackList = array();
 
 	private $replaceChars = array(
 		'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'à' => 'a', 'è' => 'e', 'ì' => 'i',
 		'ò' => 'o',	'ù' => 'u', 'ä' => 'a', 'ë' => 'e', 'ï' => 'i', 'ö' => 'o', 'ü' => 'u', 'â' => 'a',
-		'ê' => 'e', 'î' => 'i', 'ô' => 'o', 'û' => 'u', 'ã' => 'a', 'õ' => 'o', 'ű' => 'u',	'ý' => 'y',
-		'ç' => 'c', 'ñ' => 'n', 'α' => 'a',	'β' => 'b',	'γ' => 'g', 'δ' => 'd', 'ε' => 'e',	'ζ' => 'z',
-		'η' => 'h',	'θ' => '8',	'ι' => 'i',	'κ' => 'k',	'λ' => 'l',	'μ' => 'm',	'ν' => 'n', 'ξ' => '3',
-		'π' => 'p', 'ρ' => 'r', 'σ' => 's', 'τ' => 't', 'υ' => 'y',	'φ' => 'f',	'χ' => 'x',	'ψ' => 'ps',
-		'ω' => 'w',	'ά' => 'a',	'έ' => 'e',	'ί' => 'i', 'ή' => 'h',	'ώ' => 'w',	'ς' => 's',	'ϊ' => 'i',
-		'ΰ' => 'y',	'ϋ' => 'y',	'ΐ' => 'i', 'ş' => 's', 'ı' => 'i',	'ğ' => 'g',	'б' => 'b',	'в' => 'v',
-		'г' => 'g',	'д' => 'd',	'ё' => 'yo', 'ж' => 'zh', 'з' => 'z', 'и' => 'i', 'й' => 'j', 'к' => 'k',
-		'л' => 'l',	'м' => 'm', 'н' => 'n', 'п' => 'p', 'т' => 't', 'ф' => 'f', 'ц' => 'c', 'ч' => 'ch',
-		'ш' => 'sh','щ' => 'sh', 'ъ' => '', 'ы' => 'y', 'э' => 'e', 'ю' => 'yu', 'я' => 'ya', '№' => '',
+		'ê' => 'e', 'î' => 'i', 'ô' => 'o', 'û' => 'u', 'ã' => 'a', 'õ' => 'o', 'ű' => 'u', 'ý' => 'y',
+		'ç' => 'c', 'ñ' => 'n', 'α' => 'a', 'β' => 'b', 'γ' => 'g', 'δ' => 'd', 'ε' => 'e', 'ζ' => 'z',
+		'η' => 'h', 'θ' => '8', 'ι' => 'i', 'κ' => 'k', 'λ' => 'l', 'μ' => 'm', 'ν' => 'n', 'ξ' => '3',
+		'π' => 'p', 'ρ' => 'r', 'σ' => 's', 'τ' => 't', 'υ' => 'y', 'φ' => 'f', 'χ' => 'x', 'ψ' => 'ps',
+		'ω' => 'w', 'ά' => 'a', 'έ' => 'e', 'ί' => 'i', 'ή' => 'h', 'ώ' => 'w', 'ς' => 's', 'ϊ' => 'i',
+		'ΰ' => 'y', 'ϋ' => 'y', 'ΐ' => 'i', 'ş' => 's', 'ı' => 'i', 'ğ' => 'g', 'б' => 'b', 'в' => 'v',
+		'г' => 'g', 'д' => 'd', 'ё' => 'yo', 'ж' => 'zh', 'з' => 'z', 'и' => 'i', 'й' => 'j', 'к' => 'k',
+		'л' => 'l', 'м' => 'm', 'н' => 'n', 'п' => 'p', 'т' => 't', 'ф' => 'f', 'ц' => 'c', 'ч' => 'ch',
+		'ш' => 'sh', 'щ' => 'sh', 'ъ' => '', 'ы' => 'y', 'э' => 'e', 'ю' => 'yu', 'я' => 'ya', '№' => '',
 		'č' => 'c', 'ď' => 'd', 'ě' => 'e', 'ň' => 'n', 'ř' => 'r', 'š' => 's', 'ť' => 't', 'ů' => 'u',
 		'ž' => 'z', 'ą' => 'a', 'ć' => 'c', 'ę' => 'e', 'ł' => 'l', 'ń' => 'n', 'ś' => 's', 'ź' => 'z',
 		'ż' => 'z', 'ă' => 'a', 'ș' => 's', 'ț' => 't'
@@ -32,7 +32,6 @@ class PrettyUrl {
 	public function __construct($url){
 		if(is_string($url) && !empty(trim($url))){
 			$this->url = $url;
-			$this->blackList = array();
 		}else{
 			throw new \Exception("The url can't be empty");
 		}
@@ -56,16 +55,11 @@ class PrettyUrl {
 	/**
 	 * return the url encoded or not encoded
 	 *
-	 * @return mixed the url if is valid
-	 * 			false if the url invalid
+	 * @return string the url
 	 */
 
 	public function getUrl(){
-		if(isset($this->url) && !empty($this->url) && is_string($this->url)){
-			return $this->url;
-		}
-
-		return false;
+		return $this->url;
 	}
 
 	/**
@@ -128,6 +122,43 @@ class PrettyUrl {
 	}
 
 	/**
+	 * add new words to translate it to a valid
+	 * character in the URL and remove repeated
+	 * key/values
+	 *
+	 * @param array $chars array with key and value
+	 * @return bool false if $chars is not a valid associative array
+	 */
+
+	public function addChars($chars) {
+		if(!is_array($chars) && !count($chars)) {
+			return false;
+		}
+
+		$keys = array_keys($chars);
+		$validChars = false;
+
+		foreach ($keys as $key) {
+			if(!is_string($key)) {
+				$validChars = false;
+				break;
+			}else{
+				$validChars = true;
+			}
+		}
+
+		if($validChars) {
+			$len = count($this->replaceChars);
+			$defaultCharsKeys = array_keys($this->replaceChars);
+			foreach($chars as $key => $val){
+				$this->replaceChars[$key] = $val;
+			}
+
+			array_unique($this->replaceChars);
+		}
+	}
+
+	/**
 	 * removes all strings or numbers inside
 	 * the url text
 	 *
@@ -157,7 +188,7 @@ class PrettyUrl {
 		for($i = 0; $i < $len; $i++){
   
 			foreach($this->replaceChars as $key => $val){
-				if(mb_substr($this->url, $i, 1, 'utf-8') == $key){        
+				if(mb_substr($this->url, $i, 1, 'utf-8') == $key){
 					$this->url[$i] = $val;
 
 					if(ord($this->url[$i + 1]) != 0){
@@ -166,21 +197,6 @@ class PrettyUrl {
 				}
 			}
 		}
-	}
-
-	/**
-	 * replaces all null values
-	 *
-	 * @return false if the string is empty
-	 */
-
-	private function _replaceNull() {
-
-		if(strlen($this->url) == 0){
-			return false;
-		}
-
-		$this->url = str_replace("\0", "", $this->url);
 	}
 
 	/**
@@ -193,9 +209,15 @@ class PrettyUrl {
 		$this->_filter();
 		$this->_replaceChars();
 		$this->url = str_replace('_', ' ', $this->url);
-		$this->url = preg_replace('#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|€|\\\)#', '', $this->url);
+		$this->url = preg_replace(
+			'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+			'',
+			$this->url
+		);
 		$this->url = preg_replace('#\s+#', '-', $this->url);
-		$this->_replaceNull();	// delete all posible null values
+		$this->url = str_replace("\0", "", $this->url);	// delete all posible null values
+
+		$this->getUrl();
 	}
 
 }
