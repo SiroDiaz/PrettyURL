@@ -1,0 +1,34 @@
+{
+	"name": "prettyurl/prettyurl",
+	"description": "Class to create clean Urls for blogs, forums and other websites",
+	"keywords": [
+		"prettyurl",
+		"transliterate",
+		"seo",
+		"translit",
+		"transliteration",
+		"url",
+		"encode",
+		"slug",
+		"link"
+	],
+	"version": "0.2",
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Siro Diaz Palazon",
+			"email": "siro_diaz@yahoo.com",
+		}
+	],
+	"minimum-stability": "dev",
+	"require": {
+		"php": ">=5.0.0"
+	},
+	"autoload": {
+		"psr-0": {"prettyurl": "lib/"}
+	},
+	"support": {
+		"issues": "https://github.com/SiroDiaz/PrettyURL/issues",
+		"source": "https://github.com/SiroDiaz/PrettyURL"
+	}
+}

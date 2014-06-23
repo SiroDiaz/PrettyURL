@@ -9,7 +9,7 @@ class PrettyUrl {
 
 	private $replaceChars = array(
 		'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'à' => 'a', 'è' => 'e', 'ì' => 'i',
-		'ò' => 'o',	'ù' => 'u', 'ä' => 'a', 'ë' => 'e', 'ï' => 'i', 'ö' => 'o', 'ü' => 'u', 'â' => 'a',
+		'ò' => 'o', 'ù' => 'u', 'ä' => 'a', 'ë' => 'e', 'ï' => 'i', 'ö' => 'o', 'ü' => 'u', 'â' => 'a',
 		'ê' => 'e', 'î' => 'i', 'ô' => 'o', 'û' => 'u', 'ã' => 'a', 'õ' => 'o', 'ű' => 'u', 'ý' => 'y',
 		'ç' => 'c', 'ñ' => 'n', 'α' => 'a', 'β' => 'b', 'γ' => 'g', 'δ' => 'd', 'ε' => 'e', 'ζ' => 'z',
 		'η' => 'h', 'θ' => '8', 'ι' => 'i', 'κ' => 'k', 'λ' => 'l', 'μ' => 'm', 'ν' => 'n', 'ξ' => '3',
@@ -45,10 +45,11 @@ class PrettyUrl {
 	 * set the url to other
 	 *
 	 * @param string $url the url to encode
+	 * @return bool true if is a valid string false if it is invalid
 	 */
 
 	public function setUrl($url){
-		if(is_string($url) && !empty($url)){
+		if(is_string($url) && !empty(trim($url))){
 			$this->url = $url;
 			return true;
 		}
@@ -68,6 +69,8 @@ class PrettyUrl {
 
 	/**
 	 * set the type of file URL to encode
+	 *
+	 * @param bool $isFile if the URL must be for files
 	 */
 
 	public function setType($isFile) {
@@ -227,7 +230,8 @@ class PrettyUrl {
 	 * encode the data to make it valid for websites
 	 * or forums
 	 *
-	 * @return bool false if a file is invalid
+	 * @return mixed false if a file is invalid
+	 * 			or a the URL encoded for search engines
 	 */
 
 	public function Urlify(){
@@ -268,7 +272,7 @@ class PrettyUrl {
 
 				// join arrays to generate the encoded URL
 				for($i = 0; $i < $len - 1; $i++){
-					$aux .= $this->url[$i];	
+					$aux .= $this->url[$i];
 				}
 				// adds the extension at the end of the string
 				$aux .= ".". $this->url[$len - 1];
