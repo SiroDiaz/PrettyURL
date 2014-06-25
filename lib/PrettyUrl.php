@@ -5,6 +5,7 @@ class PrettyUrl {
 
 	private $url;
 	private $file;
+	private $maxLen;
 	private $blackList = array();
 
 	private $replaceChars = array(
@@ -24,22 +25,27 @@ class PrettyUrl {
 		'ż' => 'z', 'ă' => 'a', 'ș' => 's', 'ț' => 't'
 	);
 
+
 	/**
 	 * Initialize the url and define the black list
 	 *
-	 * @param string $url  the url to encode
-	 * @param bool   $file if the url is a file or not(default false)
+	 * @param string  $url  the url to encode
+	 * @param bool    $file if the url is a file or not(default false)
+	 * @param integer $maxLen the maximum URL text size(default 0 that is unlimited)
 	 * @throws Exception if the url is invalid
-	 */	
+	 */
 
-	public function __construct($url, $file = false){
+
+	public function __construct($url, $file = false, $maxLen = 0){
 		if(is_string($url) && !empty(trim($url))){
 			$this->url = $url;
 			$this->file = (is_bool($file)) ? $file : false;
+			$this->maxLen = (is_int($maxLen) && $maxLen > 0) ? $maxLen : 0;
 		}else{
 			throw new \Exception("The url can't be empty");
 		}
 	}
+
 
 	/**
 	 * set the url to other
@@ -47,6 +53,7 @@ class PrettyUrl {
 	 * @param string $url the url to encode
 	 * @return bool true if is a valid string false if it is invalid
 	 */
+
 
 	public function setUrl($url){
 		if(is_string($url) && !empty(trim($url))){
@@ -57,15 +64,18 @@ class PrettyUrl {
 		return false;
 	}
 
+
 	/**
 	 * return the url encoded or not encoded
 	 *
 	 * @return string the url
 	 */
 
+
 	public function getUrl(){
 		return $this->url;
 	}
+
 
 	/**
 	 * set the type of file URL to encode
@@ -73,9 +83,11 @@ class PrettyUrl {
 	 * @param bool $isFile if the URL must be for files
 	 */
 
+
 	public function setType($isFile) {
 		$this->file = (!is_bool($isFile)) ? false : $isFile;
 	}
+
 
 	/**
 	 * return the url type to encode or encoded
@@ -84,9 +96,36 @@ class PrettyUrl {
 	 * 			f --> file, d --> normal link
 	 */
 
+
 	public function getType(){
 		return ($this->file) ? 'f' : 'd';
 	}
+
+
+	/**
+	 * set the maximum length that can have the URL
+	 * 
+	 * @param integer $length the maximun URL length
+	 *			(0 by default)
+	 */
+
+
+	public function setMaxLength($length) {
+		$this->maxLen = (is_int($length) && $length > 0) ? $length : 0;
+	}
+
+
+	/**
+	 * return the maximum length
+	 *
+	 * @return integer the maximum length
+	 */
+
+
+	public function getMaxLength() {
+		return $this->maxLen;
+	}
+
 
 	/**
 	 * set the url words or numbers to delete
@@ -98,24 +137,27 @@ class PrettyUrl {
 	 * 			number or a string
 	 */
 
+
 	public function setBlackList($list){
+
 		if(is_object($list) || is_bool($list)){
 			return false;
 		}
 
-		if((is_string($list) || is_integer($list) || is_float($list)) && !empty($list)){
+		if ((is_string($list) || is_integer($list) || is_float($list)) && !empty($list)) {
 			$this->blackList[] = $list;
 			return true;
-		}elseif (is_array($list) && count($list)) {
+		} elseif (is_array($list) && count($list)) {
+			
 			$keys = array_keys($list);
 			$keyLength = count($list);
 			$valid_val = array();
 			
-			for($i = $keyLength - 1; $i >= 0; $i--) {
-				if(is_int($keys[$i]) && (!is_array($list[$keys[$i]]) && !is_object($list[$keys[$i]]))) {
-					if(is_string($keys[$i])){
+			for ($i = $keyLength - 1; $i >= 0; $i--) {
+				if (is_int($keys[$i]) && (!is_array($list[$keys[$i]]) && !is_object($list[$keys[$i]]))) {
+					if (is_string($keys[$i])) {
 						$valid_val[] = strtolower($list[$keys[$i]]);
-					}else{
+					} else {
 						$valid_val[] = $list[$keys[$i]];
 					}
 				}
@@ -123,7 +165,7 @@ class PrettyUrl {
 
 			$valid_val = array_unique($valid_val);
 
-			if(count($valid_val) == 0){
+			if (count($valid_val) == 0) {
 				return false;
 			}
 
@@ -137,15 +179,47 @@ class PrettyUrl {
 		}
 	}
 
+
 	/**
 	 * returns the words that are banned
 	 *
 	 * @return array the black list words
 	 */
 
+
 	public function getBlackList(){
 		return $this->blackList;
 	}
+
+
+	/**
+	 * load an array(dictionary of words with key/values)
+	 *
+	 * @param string $dict the filename to load
+	 * @return bool false if the file doesn't exists
+	 */
+
+
+	public function loadDict ($dict) {
+
+		if (!file_exists('dict/'. $dict .'.php')) {
+			return false;
+		}
+
+		$dict = require_once 'dict/'. $dict .'.php';
+
+		if (is_array($dict) && count($dict)) {
+
+			foreach ($dict as $key => $val) {
+				if (is_string($key) && !array_key_exists(strtolower($key), $this->replaceChars)) {
+					$this->replaceChars[strtolower($key)] = strtolower($val);
+				}
+			}
+
+		}
+
+	}
+
 
 	/**
 	 * add new chars to translate it to a valid
@@ -156,8 +230,9 @@ class PrettyUrl {
 	 * @return bool false if $chars is not a valid associative array
 	 */
 
+
 	public function addChars($chars) {
-		if(!is_array($chars) && !count($chars)) {
+		if (!is_array($chars) && !count($chars)) {
 			return false;
 		}
 
@@ -174,9 +249,9 @@ class PrettyUrl {
 			}
 		}
 
-		if($validChars) {
-			foreach($chars as $key => $val){
-				if(!array_key_exists($key, $this->replaceChars){
+		if ($validChars) {
+			foreach ($chars as $key => $val) {
+				if(!array_key_exists($key, $this->replaceChars)){
 					$this->replaceChars[$key] = $val;
 				}
 			}
@@ -185,6 +260,7 @@ class PrettyUrl {
 		}
 	}
 
+
 	/**
 	 * removes all strings or numbers inside
 	 * the url text
@@ -192,28 +268,31 @@ class PrettyUrl {
 	 * @return false if the url to modify is empty
 	 */
 
+	
 	private function _filter(){
 		$len = count($this->blackList);
 
-		if($len == 0){
+		if ($len == 0) {
 			return false;
 		}
 
-		for($i = $len - 1; $i >= 0; $i--){
+		for ($i = $len - 1; $i >= 0; $i--) {
 			$this->url = str_replace($this->blackList[$i], '', $this->url);
 		}
 	}
 
+	
 	/**
 	 * replace invalid url chars for valid chars
 	 * or similars
 	 */
 
+	
 	private function _replaceChars(){
 		$len = strlen($this->url);
 		
 		for($i = 0; $i < $len; $i++){
-  
+
 			foreach($this->replaceChars as $key => $val){
 				if(mb_substr($this->url, $i, 1, 'utf-8') == $key){
 					$this->url[$i] = $val;
@@ -226,6 +305,23 @@ class PrettyUrl {
 		}
 	}
 
+
+	/**
+	 * short the URL to the defined length
+	 *
+	 * @return string the URL shortened
+	 */
+
+	
+	private function _shortener () {
+		if ($this->maxLen == 0 || $this->maxLen > strlen($this->url)) {
+			return $this->url;
+		}
+
+		return substr($this->url, 0, $this->maxLen);
+	}
+
+
 	/**
 	 * encode the data to make it valid for websites
 	 * or forums
@@ -234,6 +330,7 @@ class PrettyUrl {
 	 * 			or a the URL encoded for search engines
 	 */
 
+
 	public function Urlify(){
 		$this->url = trim(strtolower($this->url));
 		$this->_filter();
@@ -241,7 +338,7 @@ class PrettyUrl {
 		$this->url = str_replace('_', ' ', $this->url);
 		
 		// if is not a file the string then encode
-		if(!$this->file){
+		if (!$this->file) {
 			
 			$this->url = preg_replace(
 				'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
@@ -255,14 +352,14 @@ class PrettyUrl {
 			$len = count($this->url);
 			$aux = '';
 			
-			if($len != 2) {
+			if ($len != 2) {
 				
-				if($len <= 1) {
+				if ($len <= 1) {
 					return false;
 				}
 
 				// encode individual array
-				for ($i = 0; $i < $len - 1; $i++){
+				for ($i = 0; $i < $len - 1; $i++) {
 					$this->url[$i] = preg_replace(
 						'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
 						'',
@@ -271,7 +368,7 @@ class PrettyUrl {
 				}
 
 				// join arrays to generate the encoded URL
-				for($i = 0; $i < $len - 1; $i++){
+				for ($i = 0; $i < $len - 1; $i++) {
 					$aux .= $this->url[$i];
 				}
 				// adds the extension at the end of the string
@@ -291,8 +388,13 @@ class PrettyUrl {
 		
 		$this->url = preg_replace('#\s+#', '-', $this->url);
 		$this->url = str_replace("\0", "", $this->url);	// delete all posible null values
+		$this->url = $this->_shortener();
+		
+		if ($this->maxLen > 0 && $this->url[$this->maxLen - 1] == '-') {
+			$this->url = substr($this->url,0 , $this->maxLen - 1);
+		}
 
-		$this->getUrl();		// return the url encoded for best search engine results
+		return $this->url;		// return the url encoded for best search engine results
 	}
 
 }
