@@ -3,13 +3,17 @@ PrettyURL
 
 Class to create clean Urls for blogs, forums and other websites
 
+## Composer
+
+	$ composer require prettyurl/prettyurl:dev-master
+
 ## Quick Start and Examples
 
 ### PrettyUrl class
 
 #### Methods
 
-setUrl, getUrl, setBlackList, getBlackList, Urlify
+setUrl, getUrl, setType, getType, setMaxLength, getMaxLength, setBlackList, getBlackList, loadDict, addChars, validate, Urlify
 
 #### Examples
 
@@ -49,6 +53,7 @@ echo $url->getUrl();
 Automatically delete invalid characters from URLs
 
 ```php
+
 require 'lib/PrettyUrl.php';
 use PrettyUrl;
 
@@ -57,5 +62,44 @@ $url = new PrettyUrl($text);
 $url->Urlify();
 echo $url->getUrl();
 // result: 'best-tintle-that-can-be-mundo-3000-set'
+
+```
+
+Generating URLs for files
+
+```php
+
+require 'lib/PrettyUrl.php';
+use PrettyUrl;
+
+/* if the second parameter is true adapt the URL
+ * to files keeping the extension
+ * by default the value is false
+ */
+
+$url = new PrettyUrl('TweetBeeg tall tweets.jpg', true);
+$newUrl = $url->Urlify();
+echo $newUrl;
+// result: 'tweetbeeg-tall-tweets.jpg'
+
+```
+
+Generating URLs with a determinate length. If the
+length is higher that the defined the Url will be shorted.
+
+```php
+
+require 'lib/PrettyUrl.php';
+use PrettyUrl;
+
+$url = new PrettyUrl('TweetBeeg tall tweets $$Jlkjs~write more than  ?¿  140 character$=@');
+/*
+ * also valid
+ * $url = new PrettyUrl('TweetBeeg tall tweets $$Jlkjs~write more than  ?¿  140 character$=@', false, 20);
+ */
+$url->setMaxLength(20);
+$newUrl = $url->Urlify();
+echo $newUrl;
+// result: 'tweetbeeg-tall-tweet'
 
 ```

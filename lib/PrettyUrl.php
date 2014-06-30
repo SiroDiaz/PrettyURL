@@ -36,8 +36,8 @@ class PrettyUrl {
 	 */
 
 
-	public function __construct($url, $file = false, $maxLen = 0){
-		if(is_string($url) && !empty(trim($url))){
+	public function __construct($url, $file = false, $maxLen = 0) {
+		if (is_string($url) && !empty(trim($url))) {
 			$this->url = $url;
 			$this->file = (is_bool($file)) ? $file : false;
 			$this->maxLen = (is_int($maxLen) && $maxLen > 0) ? $maxLen : 0;
@@ -281,6 +281,26 @@ class PrettyUrl {
 		}
 	}
 
+
+	/**
+	 * check if the url is valid
+	 * 
+	 * @param string $url
+	 */
+
+
+	public function validate ($url) {
+		if (!is_string($url) && strlen($url) == 0) {
+			return false;
+		}
+
+		if (preg_match('#^[a-zA-Z0-9\-]+(\.[a-zA-Z]+)?$#', $url)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	
 	/**
 	 * replace invalid url chars for valid chars
@@ -341,7 +361,7 @@ class PrettyUrl {
 		if (!$this->file) {
 			
 			$this->url = preg_replace(
-				'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+				'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|\~|:|;|\+|\,|\`|\||€|£|\\\)#',
 				'',
 				$this->url
 			);
@@ -361,7 +381,7 @@ class PrettyUrl {
 				// encode individual array
 				for ($i = 0; $i < $len - 1; $i++) {
 					$this->url[$i] = preg_replace(
-						'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+						'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|\~|:|;|\+|\,|\`|\||€|£|\\\)#',
 						'',
 						$this->url[$i]
 					);
@@ -376,7 +396,7 @@ class PrettyUrl {
 				$this->url = $aux;
 			} else {			// in case of the file the file name was more valid then do this 
 				$this->url[0] = preg_replace(
-					'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|:|;|\+|\,|\`|\||€|£|\\\)#',
+					'#(\.|&|%|\$|\^|\'|\"|@|\#|\(|\)|\[|\]|\?|\¿|\!|\¡|/|\¬|\=|\·|\~|:|;|\+|\,|\`|\||€|£|\\\)#',
 					'',
 					$this->url[0]
 				);
